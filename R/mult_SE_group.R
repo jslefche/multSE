@@ -37,16 +37,16 @@ mult.SE.group = function(d, group, nresamp = 100, ...) {
     } )
     
     # Calculate means and quantiles
-    means = c(0,colMeans(mult.SE.list[[2]]))
-    means.p = c(0, colMeans(mult.SE.list[[1]]))
-    upper.ci = c(0,apply(mult.SE.list[[1]], 2, function(x) quantile(x, prob = 0.975, na.rm = T)) )
-    lower.ci = c(0,apply(mult.SE.list[[1]], 2, function(x) quantile(x, prob = 0.025, na.rm = T)) )
+    means = colMeans(mult.SE.list[[2]])
+    means.p = colMeans(mult.SE.list[[1]])
+    upper.ci = apply(mult.SE.list[[1]], 2, function(x) quantile(x, prob = 0.975, na.rm = T) )
+    lower.ci = apply(mult.SE.list[[1]], 2, function(x) quantile(x, prob = 0.025, na.rm = T) )
 
     # Return data.frame
     data.frame(
       group = igroup,
-      n.samp = 1:length(means),
-      bias = means,
+      n.samp = 2:length(means),
+      means = means,
       bias.lower = lower.ci + (means - means.p),
       bias.upper = upper.ci + (means - means.p) )
     
