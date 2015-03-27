@@ -8,7 +8,7 @@ mult.SE = function (d) {
 }
 
 # Function to conduct bootstrap and permutation tests
-mult.SE.group = function(d, group, nresamp = 100, ...) {
+mult.SE.group = function(d, group, nresamp = 10000, ...) {
   
   # Ensure distance matrix is of class==matrix and not class==dist
   D = as.matrix(D)
@@ -19,7 +19,7 @@ mult.SE.group = function(d, group, nresamp = 100, ...) {
     # Subset distance matrix by group
     subset.D = D[group == igroup, group == igroup]
     
-    # Conduct boostrapped or permutation-based resampling
+    # Conduct boostrapped (replace = T) or permutation-based (replace = F) resampling
     mult.SE.list = lapply(c(T, F), function(replace) {
       
       # Bootstrap subsetted distance matrix by each sample size
@@ -45,7 +45,7 @@ mult.SE.group = function(d, group, nresamp = 100, ...) {
     # Return data.frame
     data.frame(
       group = igroup,
-      n.samp = 2:length(means),
+      n.samp = 1:length(means),
       means = means,
       bias.lower = lower.ci + (means - means.p),
       bias.upper = upper.ci + (means - means.p) )
