@@ -39,12 +39,13 @@ output = mult.SE.group(D, factor(pk$Time), nresamp = 10000)
 library(ggplot2)
 
 ggplot(output, aes(x = n.samp, y = means, group = group)) +
-  geom_point(aes(shape = group, fill = group), size = 4) + 
   geom_errorbar(aes(ymax = means + bias.upper, ymin = means - bias.lower), width = 0.2)+
+  geom_point(aes(shape = group, fill = group), size = 4) + 
   scale_shape_manual(values = c(21, 24:25))+
-  scale_fill_manual(values = c("black","grey50",NA))+
+  scale_fill_manual(values = c("black","grey50","white"))+
   facet_wrap( ~ group) +
-  theme_bw(base_size = 18)
+  theme_bw(base_size = 18) +
+  theme(legend.position = "none")
 ```
 ###Benchmarks vs. old function
 ```
