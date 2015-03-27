@@ -22,7 +22,7 @@ mult.SE.group = source("https://github.com/jslefche/multSE/edit/master/R/mult_SE
 ```
 pk = read.csv("https://github.com/jslefche/multSE/blob/master/data/PoorKnights.csv")
 ```
-###Run function and plot results
+###Calculate multivariate SE and confidence intervals
 ```
 # Load vegan library
 library(vegan)
@@ -49,6 +49,7 @@ ggplot(output, aes(x = n.samp, y = means, group = group)) +
   panel.grid.major = element_blank(), 
   panel.grid.minor = element_blank())
 ```
+![plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
 ###Benchmarks vs. old function
 ```
 system.time(MSEgroup.d(D, factor(pk$Time), nresamp = 10000)) #user: 118.22
