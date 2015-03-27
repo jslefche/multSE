@@ -1,4 +1,4 @@
-# multSE: Multivariate dissimilarity-based standard error
+# multSE: Multivariate dissimilarity-based SE
 
   Implementation of multivariate dissimilarity-based standard error estimates from:
 
@@ -13,13 +13,15 @@ Author: Jon Lefcheck (jslefche@vims.edu)
 
 ###Load functions
 ```
+library(devtools)
 # Function from supplements
-MSEgroup.d = source("https://github.com/jslefche/multSE/edit/master/R/MSEgroup_d.R")
+MSEgroup.d = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/MSEgroup_d.R")[[1]]
 # New function using vectorization
-mult.SE.group = source("https://github.com/jslefche/multSE/edit/master/R/mult_SE_group.R")
+mult.SE.group = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/mult_SE_group.R")[[1]]
 ```
 ###Load data
 ```
+# Poor Knights fish survey data, from supplementary material
 pk = read.csv("https://github.com/jslefche/multSE/blob/master/data/PoorKnights.csv")
 ```
 ###Calculate multivariate SE and confidence intervals
@@ -30,7 +32,7 @@ library(vegan)
 # Create species-by-site distance matrix
 D = vegdist(pk[,3:49] + 1)
 
-# Run new function
+# Run optimized function to generate multivariate SE for each group
 output = mult.SE.group(D, factor(pk$Time), nresamp = 10000)
 ```
 ###Plot output
@@ -51,7 +53,17 @@ ggplot(output, aes(x = n.samp, y = means, group = group)) +
 ```
 ![plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
 ###Benchmarks vs. old function
+
+Can test function provided in supplements to Ecol Letters article, versus new function.
+
 ```
-system.time(MSEgroup.d(D, factor(pk$Time), nresamp = 10000)) #user: 118.22
-system.time(mult.SE.group(D, factor(pk$Time), nresamp = 10000)) #user: 37.3
+library(microbenchmark)
+
+#Run benchmarks
+bench = microbenchmark(
+  MSEgroup.d(D, factor(pk$Time), nresamp = 10000),
+  mult.SE.group(D, factor(pk$Time), nresamp = 10000) )
+
+#And plot
+boxplot(bench)
 ```
