@@ -3,9 +3,9 @@
   Implementation of multivariate dissimilarity-based standard error estimates from:
 
     Anderson, MJ and J Santanta-Garcon. 2015. "Measures of precision for dissimilarity-based multivariate
-    analysis of ecological communities." Ecology Letters: 18(1): 66-73.
+    analysis of ecological communities." Ecology Letters 18(1): 66-73.
     
-Version: 0.1 (2015-03-27)
+Version: 0.1 (2015-03-28)
 
 Author: Jon Lefcheck (jslefche@vims.edu)
 
@@ -69,7 +69,7 @@ benchmarks.df = do.call(rbind, lapply(c(10, 100, 1000, 10000), function(i)
              system.time(mult.SE.group(D, factor(pk$Time), nresamp = i) )[3] ) )
 ) )
 
-#And plot
+# And plot
 ggplot(benchmarks.df, aes(x = nresamp, y = time, group = time, col = time, shape = time)) +
   geom_point(size = 10) +
   scale_color_manual(values = c("red", "black")) + 
