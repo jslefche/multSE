@@ -22,7 +22,9 @@ mult.SE.group = source_url("https://raw.githubusercontent.com/jslefche/multSE/ma
 ###Load data
 ```
 # Poor Knights fish survey data, from supplementary material
-pk = read.csv("https://github.com/jslefche/multSE/blob/master/data/PoorKnights.csv")
+tf = tempfile()
+download.file("https://raw.githubusercontent.com/jslefche/multSE/master/data/PoorKnights.csv", tf)
+pk = read.csv(tf)
 ```
 ###Calculate multivariate SE and confidence intervals
 ```
@@ -47,23 +49,36 @@ ggplot(output, aes(x = n.samp, y = means, group = group)) +
   scale_fill_manual(values = c("black","grey50","white"))+
   facet_wrap( ~ group) +
   theme_bw(base_size = 18) +
+  labs(x = "Sample size (n)", y = "Multivariate pseudo SE") +
   theme(legend.position = "none", 
-  panel.grid.major = element_blank(), 
-  panel.grid.minor = element_blank())
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
 ```
-![plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
+![multSE plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
 ###Benchmarks vs. old function
 
-Can test function provided in supplements to Ecol Letters article, versus new function.
+Compare `mult.SE.group` to function included in the supplements of ELE paper `MSEgroup.d`.
 
 ```
-library(microbenchmark)
-
-#Run benchmarks
-bench = microbenchmark(
-  MSEgroup.d(D, factor(pk$Time), nresamp = 10000),
-  mult.SE.group(D, factor(pk$Time), nresamp = 10000) )
+# Calculate system time for old vs. new function 
+benchmarks.df = do.call(rbind, lapply(c(10, 100, 1000, 10000), function(i)
+  data.frame(
+    nresamp = i,
+    fn = c("old", "new"),
+    time = c(system.time( MSEgroup.d(D, factor(pk$Time), nresamp = i) )[3],
+             system.time(mult.SE.group(D, factor(pk$Time), nresamp = i) )[3] ) )
+) )
 
 #And plot
-boxplot(bench)
+ggplot(benchmarks.df, aes(x = nresamp, y = time, group = time, col = time, shape = time)) +
+  geom_point(size = 10) +
+  scale_color_manual(values = c("red", "black")) + 
+  scale_shape_manual(values = c()) +   theme_bw(base_size = 18) +
+  labs(x = "Number of resamples", y = "System time (seconds)") +
+  theme(legend.position = "none", 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
 ```
+![multSE benchmark plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_benchmark.jpeg?raw=true)
+
+As you can see, the new function 'mult.SE.group` is much faster, particularly when the number of resamples is large.
