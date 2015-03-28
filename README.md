@@ -57,10 +57,10 @@ ggplot(output, aes(x = n.samp, y = means, group = group)) +
 ![multSE plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
 ###Benchmarks vs. old function
 
-Compare `mult.SE.group` to function included in the supplements of ELE paper `MSEgroup.d`.
+Compare `mult.SE.group` to function included in the supplements of ELE paper `MSEgroup.d`:
 
 ```
-# Calculate system time for old vs. new function 
+# Calculate system time for old vs. new function for a variety of resample sizes 
 benchmarks.df = do.call(rbind, lapply(c(10, 100, 1000, 10000), function(i)
   data.frame(
     nresamp = i,
@@ -81,4 +81,4 @@ ggplot(benchmarks.df, aes(x = nresamp, y = time, group = time, col = time, shape
 ```
 ![multSE benchmark plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_benchmark.jpeg?raw=true)
 
-As you can see, the new function 'mult.SE.group` is much faster, particularly when the number of resamples is large.
+As you can see, the new function `mult.SE.group` is much faster, particularly when the number of resamples is large.
