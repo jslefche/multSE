@@ -8,19 +8,21 @@ mult.SE = function (d) {
 }
 
 # Function to conduct bootstrap and permutation tests
-mult.SE.group = function(d, group, nresamp = 10000, ...) {
+mult.SE.group = function(d, group, nresamp = 10000, ... ) { #.progressBar = T, ...) {
   
   # Ensure distance matrix is of class==matrix and not class==dist
   D = as.matrix(D)
   
+  # if(.progressBar == T) pb = txtProgressBar(min = 0, max = nresamp * length(unique(group)) * 2, style = 3) else pb = NULL
+  
   # Conduct bootstrapping for each group
-  do.call(rbind, lapply(unique(group), function(igroup) {
+  df = do.call(rbind, lapply(unique(group), function(igroup) {
     
     # Subset distance matrix by group
     subset.D = D[group == igroup, group == igroup]
     
-    # Conduct boostrapped (replace = T) or permutation-based (replace = F) resampling
-    mult.SE.list = lapply(c(T, F), function(replace) {
+    # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
+    mult.SE.list = lapply(c(F, T), function(replace) {
       
       # Bootstrap subsetted distance matrix by each sample size
       do.call(cbind, lapply(2:ncol(subset.D), function(nsub) {
@@ -29,18 +31,28 @@ mult.SE.group = function(d, group, nresamp = 10000, ...) {
           
           # Randomly sample distance matrix
           D.samp = subset.D[sample(1:ncol(subset.D), size = nsub, replace), sample(1:ncol(subset.D), size = nsub, replace)]
+ 
+#           # Update progress bar
+#           if(!is.null(pb)) setTxtProgressBar(pb, 
+#                                             
+#                                                (replace * length(unique(group)) * nresamp) + 
+#                                                ((which(unique(group) == igroup)-1) * nresamp) + 
+#                                                (iresamp * (nsub * ncol(subset.D) - 1) ) 
+#                                              
+#                                              )
+          
           # Calculate multivariate SE
           mult.SE(D.samp)
-          
+
         } ) )
       } ) )
     } )
     
     # Calculate means and quantiles
-    means = colMeans(mult.SE.list[[2]])
-    means.p = colMeans(mult.SE.list[[1]])
-    upper.ci = apply(mult.SE.list[[1]], 2, function(x) quantile(x, prob = 0.975, na.rm = T) )
-    lower.ci = apply(mult.SE.list[[1]], 2, function(x) quantile(x, prob = 0.025, na.rm = T) )
+    means = colMeans(mult.SE.list[[1]])
+    means.p = colMeans(mult.SE.list[[2]])
+    upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975, na.rm = T) )
+    lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025, na.rm = T) )
 
     # Return data.frame
     data.frame(
@@ -51,5 +63,9 @@ mult.SE.group = function(d, group, nresamp = 10000, ...) {
       bias.upper = upper.ci + (means - means.p) )
     
   } ) )
+  
+  # if(!is.null(pb)) close(pb)  
+  
+  return(df)
 
 }
