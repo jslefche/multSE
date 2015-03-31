@@ -63,6 +63,8 @@ ggplot(output, aes(x = n.samp, y = means, group = group)) +
 ```
 ![multSE plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
 
+It appears that there is no appreciable gain in precision (i.e., decrease in SE) after about n = 14 samples for all sampling periods.
+
 Now repeat, but integrate across groups using residuals from a PERMANOVA (instead of SS):
 
 ```
@@ -78,6 +80,8 @@ ggplot(output2, aes(x = n.samp, y = means)) +
         panel.grid.minor = element_blank())
 ```
 ![multSE permanova plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_permanova_plot.jpeg?raw=true)
+
+Similarly, there is no significant decrease in multSE after about n = 14 samples, but this is generalizable across all groups (sampling periods) in the design.
 
 ###Benchmarks vs. old function
 
