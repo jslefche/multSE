@@ -90,22 +90,22 @@ benchmarks.df = do.call(rbind, lapply(c(10, 100, 1000, 10000), function(i)
     nresamp = i,
     fn = c("old", "new"),
     time = c(system.time( MSEgroup.d(D, nresamp = i, group = factor(pk$Time)) )[3],
-             system.time(mult.SE.group(D, nresamp = i, group = factor(pk$Time)) )[3] ) )
+             system.time(multSE(D, nresamp = i, group = factor(pk$Time)) )[3] ) )
 ) )
 
 # And plot
-ggplot(benchmarks.df, aes(x = nresamp, y = time, group = time, col = time, shape = time)) +
-  geom_point(size = 10) +
-  scale_color_manual(values = c("red", "black")) + 
-  scale_shape_manual(values = c()) +   theme_bw(base_size = 18) +
-  labs(x = "Number of resamples", y = "System time (seconds)") +
-  theme(legend.position = "none", 
+ggplot(benchmarks.df, aes(x = nresamp, y = time, group = fn, col = fn, shape = fn)) +
+  geom_point(size = 10, shape = 2) +
+  scale_color_manual(values = c("red", "black"), name = "") + 
+  labs(x = "Number of resamples", y = "System time (seconds)") +.
+  theme_bw(base_size = 18) +
+  theme(legend.position = c(0.2, 0.8), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 ```
 ![multSE benchmark plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_benchmark.jpeg?raw=true)
 
-As you can see, the new function `mult.SE.group` is much faster, particularly when the number of resamples is large.
+As you can see, the new function `multSE` is much faster, particularly when the number of resamples is large.
 
 Now repeat for `permanova = T`:
 ```
@@ -118,12 +118,15 @@ benchmarks.df2 = do.call(rbind, lapply(c(10, 100, 1000, 10000), function(i)
 ) )
 
 # And plot
-ggplot(benchmarks.df, aes(x = nresamp, y = time, group = time, col = time, shape = time)) +
-  geom_point(size = 10) +
+ggplot(benchmarks.df2, aes(x = nresamp, y = time, group = fn, col = fn, shape = fn)) +
+  geom_point(size = 10, shape = 2) +
   scale_color_manual(values = c("red", "black")) + 
-  scale_shape_manual(values = c()) +   theme_bw(base_size = 18) +
   labs(x = "Number of resamples", y = "System time (seconds)") +
+  theme_bw(base_size = 18) +
   theme(legend.position = "none", 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
 ```
+![multSE benchmark plot 2](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_benchmark2.jpeg?raw=true)
+
+Again, `multSE` is much faster, although not by as large a margin when using the SS-based calculation.
