@@ -8,10 +8,18 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
 
     # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
     mult.SE.list = lapply(c(F, T), function(replace) {
-      
+
+      # Remove groups with only a single replicate
+      if(min(table(group)) == 1) {
+        remove = names(table(group)[table(group) == min(table(group))])
+        D = D[!group %in% remove, !group %in% remove]
+        group = group[!group %in% remove]
+        warning("Groups with 1 replicate have been removed from the analysis!")
+      }
+            
       # Bootstrap subsetted distance matrix by smallest sample size across all groups
       do.call(cbind, lapply(2:min(table(group)), function(nsub) {
-        
+
         # Define model parameters
         group.resamp = factor(rep(1:length(unique(group)), each = nsub))
         g = length(levels(factor(group.resamp)))
@@ -41,10 +49,10 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
     } )
     
     #Calculate means and quantiles
-    means = colMeans(mult.SE.list[[1]])
-    means.p = colMeans(mult.SE.list[[2]])
-    lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025))
-    upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975))
+    means = colMeans(mult.SE.list[[1]], na.rm = T)
+    means.p = colMeans(mult.SE.list[[2]], na.rm = T)
+    lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025, na.rm = T))
+    upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975, na.rm = T))
     
     # Return data.frame with means and quantiles
     df = data.frame(
@@ -66,8 +74,8 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
           group = igroup,
           n.samp = 1,
           means =  0,
-          lower.ci = 0,
-          upper.ci = 0) 
+          lower.ci = NA,
+          upper.ci = NA) 
         
         } else {
         
@@ -93,15 +101,15 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
         } )
         
         #Calculate means and quantiles
-        means = colMeans(mult.SE.list[[1]])
-        means.p = colMeans(mult.SE.list[[2]])
-        lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025))
-        upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975))
+        means = colMeans(mult.SE.list[[1]], na.rm = T)
+        means.p = colMeans(mult.SE.list[[2]], na.rm = T)
+        lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025, na.rm = T))
+        upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975, na.rm = T))
         
         # Return data.frame with means and quantiles
         data.frame(
           group = igroup,
-          n.samp = 1:length(means),
+          n.samp = 2:(length(means) + 1),
           means =  means,
           lower.ci = lower.ci + (means - means.p),
           upper.ci = upper.ci + (means - means.p) )
