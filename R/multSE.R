@@ -90,6 +90,7 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
       
       # Return data.frame with means and quantiles
       df = data.frame(
+        group = igroup,
         n.samp = 1:length(means),
         means =  means,
         lower.ci = lower.ci + (means - means.p),
