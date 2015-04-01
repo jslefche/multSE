@@ -41,7 +41,7 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
     } )
     
     #Calculate means and quantiles
-    means = length(colMeans(mult.SE.list[[1]]))
+    means = colMeans(mult.SE.list[[1]])
     means.p = colMeans(mult.SE.list[[2]])
     lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025))
     upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975))
@@ -61,42 +61,54 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = F, ... ) {
       # Subset distance matrix by group
       subset.D = D[group == igroup, group == igroup]
       
-      # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
-      mult.SE.list = lapply(c(F, T), function(replace) {
+      if(sum(subset.D) == 0) {
+        data.frame(
+          group = igroup,
+          n.samp = 1,
+          means =  0,
+          lower.ci = 0,
+          upper.ci = 0) 
         
-        # Bootstrap subsetted distance matrix by each sample size
-        do.call(cbind, lapply(2:ncol(subset.D), function(nsub) {
-          # And for each level of number of resamples
-          do.call(rbind, lapply(1:nresamp, function(iresamp) {
-            
-            # Randomly sample distance matrix
-            D.samp = subset.D[sample(1:ncol(subset.D), size = nsub, replace), sample(1:ncol(subset.D), size = nsub, replace)]
-            
-            # Calculate multivariate SE based on SS
-            n = dim(as.matrix(D.samp))[1]
-            ss = sum(D.samp^2)/n
-            v = ss/(n-1)
-            sqrt(v/n)
-  
-          } ) ) 
-        } ) )
-      } )
-      
-      #Calculate means and quantiles
-      means = length(colMeans(mult.SE.list[[1]]))
-      means.p = colMeans(mult.SE.list[[2]])
-      lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025))
-      upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975))
-      
-      # Return data.frame with means and quantiles
-      df = data.frame(
-        group = igroup,
-        n.samp = 1:length(means),
-        means =  means,
-        lower.ci = lower.ci + (means - means.p),
-        upper.ci = upper.ci + (means - means.p) )
-      
-    } ) )
+        } else {
+        
+        # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
+        mult.SE.list = lapply(c(F, T), function(replace) {
+          
+          # Bootstrap subsetted distance matrix by each sample size
+          do.call(cbind, lapply(2:ncol(subset.D), function(nsub) {
+            # And for each level of number of resamples
+            do.call(rbind, lapply(1:nresamp, function(iresamp) {
+              
+              # Randomly sample distance matrix
+              D.samp = subset.D[sample(1:ncol(subset.D), size = nsub, replace), sample(1:ncol(subset.D), size = nsub, replace)]
+              
+              # Calculate multivariate SE based on SS
+              n = dim(as.matrix(D.samp))[1]
+              ss = sum(D.samp^2)/n
+              v = ss/(n-1)
+              sqrt(v/n)
+    
+            } ) ) 
+          } ) )
+        } )
+        
+        #Calculate means and quantiles
+        means = colMeans(mult.SE.list[[1]])
+        means.p = colMeans(mult.SE.list[[2]])
+        lower.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.025))
+        upper.ci = apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975))
+        
+        # Return data.frame with means and quantiles
+        data.frame(
+          group = igroup,
+          n.samp = 1:length(means),
+          means =  means,
+          lower.ci = lower.ci + (means - means.p),
+          upper.ci = upper.ci + (means - means.p) )
+        
+        }
+        
+      } ) )
   }
     
   return(df) 
