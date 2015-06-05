@@ -5,7 +5,7 @@
     Anderson, MJ and J Santanta-Garcon. 2015. "Measures of precision for dissimilarity-based multivariate
     analysis of ecological communities." Ecology Letters 18(1): 66-73.
     
-Version: 0.1 (2015-03-28)
+Version: 0.1.1 (2015-06-05) 
 
 Author: Jon Lefcheck (jslefche@vims.edu)
 
