@@ -1,7 +1,7 @@
-minsamp = function(output, ignore.min = T) {
+minsamp = function(output, ignore.min = NULL) {
   
   # Remove all samples N = 2 from dataset before calculating minimum
-  if(ignore.min == TRUE) output = subset(output, n.samp > 2)
+  if(!is.null(ignore.min)) output = subset(output, n.samp > ignore.min)
   
   # Retrieve minimum number of samples for which error bars still overlap
   if(nrow(output) == 0) 
