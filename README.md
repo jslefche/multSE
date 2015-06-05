@@ -18,7 +18,7 @@ library(devtools)
 MSEgroup.d = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/MSEgroup_d.R")[[1]]
 MSE.d = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/MSE_d.R")[[1]]
 # New function using vectorization
-multSE = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/mult_SE_group.R")[[1]]
+multSE = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/multSE.R")[[1]]
 ```
 ###Load data
 The example data represent fish survey data from Poor Knight's Island, and were collected using visual census along a 25 x 5 m transect at a depth of 8-20 m. Three time periods were sampled: September 1998 (n = 15), March 1999 (n = 21), and September 1999 (n = 20).
@@ -49,21 +49,40 @@ And plot the output:
 # Plot output
 library(ggplot2)
 
-ggplot(output, aes(x = n.samp, y = means, group = group)) +
-  geom_errorbar(aes(ymax = upper.ci, ymin = lower.ci), width = 0.2)+
+(p = ggplot(output, aes(x = n.samp, y = means, group = group)) +
+  geom_errorbar(aes(ymax = upper.ci, ymin = lower.ci), width = 0.2) +
   geom_point(aes(shape = group, fill = group), size = 4) + 
-  scale_shape_manual(values = c(21, 24:25), name = "")+
-  scale_fill_manual(values = c("black","grey50","white"), name = "")+
+  scale_shape_manual(values = c(21, 24:25), name = "") +
+  scale_fill_manual(values = c("red", "blue", "chartreuse3"), name = "") + 
   coord_cartesian(ylim = c(0, 0.65)) +
   theme_bw(base_size = 18) +
   labs(x = "Sample size (n)", y = "Multivariate pseudo SE") +
   theme(legend.position = c(0.8, 0.8), 
         panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank())
+        panel.grid.minor = element_blank()) )
 ```
 ![multSE plot](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot.jpeg?raw=true)
 
-It appears that there is no appreciable gain in precision (i.e., decrease in SE) after about n = 14 samples for all sampling periods.
+It appears that there is no appreciable gain in precision (i.e., decrease in SE) after about n = 15 samples, but we can quantitatively double-check this estimate using the `minsamp` function:
+```
+# Load function
+minsamp = source_url("https://raw.githubusercontent.com/jslefche/multSE/master/R/minsamp.R")[[1]]
+
+# Calculate minimum sample size for each group
+(minimum.sample.size = minsamp(output, output$group))
+  
+#  group  min.mean min.lower.ci min.upper.ci min.n
+# Sep.98 0.1123218   0.10133429    0.1213122    11
+# Mar.99 0.1012409   0.09194648    0.1101552    15
+# Sep.99 0.1026725   0.09383249    0.1097324    15
+  
+# Add to plot
+p + 
+  geom_hline(data = minimum.sample.size, aes(yintercept = min.mean, col = group), lwd = 1) +
+  geom_vline(data = minimum.sample.size, aes(xintercept = min.n, col = group), lwd = 1)
+```
+
+![multSE plot intersect](https://github.com/jslefche/jslefche.github.io/blob/master/img/multSE_plot_intersect.jpeg?raw=true)
 
 Now repeat, but integrate across groups using residuals from a PERMANOVA (instead of SS):
 
