@@ -4,7 +4,7 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = TRUE, ... ) {
   # Ensure distance matrix is of class==matrix and not class==dist
   D = as.matrix(D)
   
-  if(permanova == T) {
+  if(permanova == T & group != 1) {
     
     # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
     mult.SE.list = lapply(c(FALSE, TRUE), function(replace) {
@@ -89,7 +89,7 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = TRUE, ... ) {
       
       if(sum(subset.D) == 0) {
         data.frame(
-          group = igroup,
+          group = as.character(igroup),
           n.samp = 1,
           means =  0,
           lower.ci = NA,
@@ -132,7 +132,7 @@ multSE = function(D, nresamp = 10000, group = 1, permanova = TRUE, ... ) {
         
         # Return data.frame with means and quantiles
         data.frame(
-          group = igroup,
+          group = as.character(igroup),
           n.samp = 2:(length(means) + 1),
           means =  means,
           lower.ci = lower.ci + (means - means.p),
