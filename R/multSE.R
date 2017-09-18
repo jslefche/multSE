@@ -98,6 +98,7 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
       subset.D <- D[group == igroup, group == igroup]
       
       if(sum(subset.D) == 0) {
+        
         data.frame(
           group = as.character(igroup),
           n.samp = 1,
@@ -141,12 +142,16 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
         upper.ci <- apply(mult.SE.list[[2]], 2, function(x) quantile(x, prob = 0.975, na.rm = T))
         
         # Return data.frame with means and quantiles
-        data.frame(
+        df <- data.frame(
           group = as.character(igroup),
           n.samp = 2:(length(means) + 1),
           means =  means,
           lower.ci = lower.ci + (means - means.p),
           upper.ci = upper.ci + (means - means.p) )
+        
+        if(length(unique(df$group)) == 1) df <- df[, -(1)]
+        
+        return(df)
         
       }
       
