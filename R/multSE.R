@@ -13,7 +13,7 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
   D <- as.matrix(D)
   
   if(permanova == TRUE & !missing(group)) {
-    
+ 
     # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
     mult.SE.list <- lapply(c(FALSE, TRUE), function(replace) {
       
