@@ -1,19 +1,21 @@
 #' multSE: multivariate dissimilarity-based standard errors
 #' 
-#' @param D a sample-by-species distance matrix
+#' @param mat a sample-by-species distance matrix
 #' @param group an optional vector of groups
 #' @param nressamp number of resamples in bootstrapping
 #' @param permanova, whether standard errors should be computed across all groups (TRUE) or individually for each group (FALSE)
 #' 
 #' @return a data.frame with the group (if specified), the means +/- 95% confidence intervals for each level of N (samples)
-
-multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
+#' 
+multSE <- function(mat, group, nresamp = 10000, permanova = FALSE) {
   
   # Ensure distance matrix is of class==matrix and not class==dist
-  D <- as.matrix(D)
+  mat <- as.matrix(mat)
+  
+  if(!missing(group) & dim(mat)[1] != length(group)) stop("Ensure distance matrix and grouping vector have the same dimensions!")
   
   if(permanova == TRUE & !missing(group)) {
- 
+    
     # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
     mult.SE.list <- lapply(c(FALSE, TRUE), function(replace) {
       
@@ -22,7 +24,7 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
         
         remove <- names(table(group)[table(group) == min(table(group))])
         
-        D <- D[!group %in% remove, !group %in% remove]
+        mat <- mat[!group %in% remove, !group %in% remove]
         
         group <- group[!group %in% remove]
         
@@ -50,14 +52,14 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
             sample(which(group == igroup), size = nsub, replace = replace) ) )
           
           # Sample distance matrix from column numbers
-          D.samp <- D[cols, cols]
+          mat.samp <- mat[cols, cols]
           
           # Calculate multivariate SE based on residuals from PERMANOVA
-          N <- dim(D.samp)[1]
+          N <- dim(mat.samp)[1]
           
           I <- diag(N)
           
-          A <- -0.5 * D.samp^2 
+          A <- -0.5 * mat.samp^2 
           
           G <- A - apply(A, 1, mean) %o% rep(1, N) - rep(1, N) %o% apply(A, 2, mean) + mean(A) 
           
@@ -95,9 +97,9 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
     df <- do.call(rbind, lapply(unique(group), function(igroup) {
       
       # Subset distance matrix by group
-      subset.D <- D[group == igroup, group == igroup]
+      subset.mat <- mat[which(group == igroup), which(group == igroup)]
       
-      if(sum(subset.D) == 0) {
+      if(sum(subset.mat) == 0) {
         
         data.frame(
           group = as.character(igroup),
@@ -112,17 +114,17 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
         mult.SE.list <- lapply(c(F, T), function(replace) {
           
           # Bootstrap subsetted distance matrix by each sample size
-          do.call(cbind, lapply(2:ncol(subset.D), function(nsub) {
+          do.call(cbind, lapply(2:ncol(subset.mat), function(nsub) {
             # And for each level of number of resamples
             do.call(rbind, lapply(1:nresamp, function(iresamp) {
               
               # Randomly sample distance matrix
-              D.samp <- subset.D[sample(1:ncol(subset.D), size = nsub, replace), sample(1:ncol(subset.D), size = nsub, replace)]
+              mat.samp <- subset.mat[sample(1:ncol(subset.mat), size = nsub, replace), sample(1:ncol(subset.mat), size = nsub, replace)]
               
               # Calculate multivariate SE based on SS
-              n <- dim(as.matrix(D.samp))[1]
+              n <- dim(as.matrix(mat.samp))[1]
               
-              ss <- sum(D.samp^2)/n
+              ss <- sum(mat.samp^2)/n
               
               v <- ss/(n-1)
               
@@ -148,9 +150,7 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
           means =  means,
           lower.ci = lower.ci + (means - means.p),
           upper.ci = upper.ci + (means - means.p) )
-        
-        if(length(unique(df$group)) == 1) df <- df[, -(1)]
-        
+
         return(df)
         
       }
@@ -158,6 +158,10 @@ multSE <- function(D, group, nresamp = 10000, permanova = TRUE) {
     } ) )
     
   }
+  
+  if(length(unique(df$group)) == 1) df <- df[, -(1)]
+  
+  if(permanova == TRUE & !missing(group)) warning("Reporting group-averaged standard errors. To return group-specific standard errors, use argument `permanova = F`")
   
   return(df) 
   
