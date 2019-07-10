@@ -7,14 +7,14 @@
 #' 
 #' @return a data.frame with the group (if specified), the means +/- 95% confidence intervals for each level of N (samples)
 #' 
-multSE <- function(mat, group, nresamp = 10000, permanova = FALSE) {
+multSE <- function(mat, group = NULL, nresamp = 10000, permanova = FALSE) {
   
   # Ensure distance matrix is of class==matrix and not class==dist
   mat <- as.matrix(mat)
   
-  if(!missing(group) & dim(mat)[1] != length(group)) stop("Ensure distance matrix and grouping vector have the same dimensions!")
+  if(!is.null(group) & dim(mat)[1] != length(group)) stop("Ensure distance matrix and grouping vector have the same dimensions!")
   
-  if(permanova == TRUE & !missing(group)) {
+  if(permanova == TRUE & !is.null(group)) {
     
     # Conduct permutation (replace = F) and boostrapped (replace = T) resampling
     mult.SE.list <- lapply(c(FALSE, TRUE), function(replace) {
@@ -91,7 +91,7 @@ multSE <- function(mat, group, nresamp = 10000, permanova = FALSE) {
     
   } else {
     
-    if(missing(group)) group <- 1
+    if(is.null(group)) group <- rep("1", dim(mat)[1])
     
     # Conduct bootstrapping for each group
     df <- do.call(rbind, lapply(unique(group), function(igroup) {
@@ -150,7 +150,7 @@ multSE <- function(mat, group, nresamp = 10000, permanova = FALSE) {
           means =  means,
           lower.ci = lower.ci + (means - means.p),
           upper.ci = upper.ci + (means - means.p) )
-
+        
         return(df)
         
       }
@@ -161,7 +161,7 @@ multSE <- function(mat, group, nresamp = 10000, permanova = FALSE) {
   
   if(length(unique(df$group)) == 1) df <- df[, -(1)]
   
-  if(permanova == TRUE & !missing(group)) warning("Reporting group-averaged standard errors. To return group-specific standard errors, use argument `permanova = F`")
+  if(permanova == TRUE & !is.null(group)) warning("Reporting group-averaged standard errors. To return group-specific standard errors, use argument `permanova = F`")
   
   return(df) 
   
